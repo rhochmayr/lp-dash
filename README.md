@@ -1,10 +1,14 @@
-# lp-dash
+# Lilypad Dashboard
 
-lp-dash is a modern dashboard application built with React, TypeScript, and Vite. It leverages various UI components and hooks to provide a seamless user experience.
+Lilypad Dasboad (lp-dash) aims to help users to view Lilypad node status. At the moment the site allows to monitor the PoW transactions against multiple nodes.
+
+Currently the dashboard is in development and will be updated with new features and improvements.
 
 ## Table of Contents
 
 - [Features](#features)
+- [Components](#components)
+- [Screenshots](#screenshots)
 - [Installation](#installation)
 - [Usage](#usage)
 - [Scripts](#scripts)
@@ -14,12 +18,25 @@ lp-dash is a modern dashboard application built with React, TypeScript, and Vite
 
 ## Features
 
+- Multiple nodes / wallets support
+- Auto-refresh
+- Persistent state using local storage
+- Transaction details
+
+## Components
+
+This repository contains a modern dashboard application built with React, TypeScript, and Vite. It leverages various UI components and hooks to provide a seamless user experience.
+
 - **React**: A JavaScript library for building user interfaces.
 - **TypeScript**: A strongly typed programming language that builds on JavaScript.
 - **Vite**: A fast build tool and development server.
 - **Tailwind CSS**: A utility-first CSS framework.
 - **Radix UI**: A set of accessible, unstyled UI components.
 - **Custom Hooks**: Includes custom hooks like `use-toast` for toast notifications.
+
+## Screenshots
+
+![Dashboard](./.github/images/dashboard.jpg)
 
 ## Installation
 
