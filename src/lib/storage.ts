@@ -1,17 +1,9 @@
-import { WalletData } from '@/types';
-
-const STORAGE_KEY = 'wallet-monitor-data';
-
-interface StoredData {
-  wallets: Record<string, {
-    address: string;
-    name?: string;
-  }>;
-}
+import { STORAGE } from '@/constants';
+import type { StoredData, NodeData } from '@/types';
 
 export function loadFromStorage(): StoredData {
   try {
-    const data = localStorage.getItem(STORAGE_KEY);
+    const data = localStorage.getItem(STORAGE.KEYS.WALLET_DATA);
     if (!data) {
       return { wallets: {} };
     }
@@ -32,7 +24,7 @@ export function loadFromStorage(): StoredData {
   }
 }
 
-export function saveToStorage(walletsData: Record<string, WalletData>) {
+export function saveToStorage(walletsData: Record<string, NodeData>) {
   try {
     const dataToStore: StoredData = {
       wallets: Object.entries(walletsData).reduce((acc, [address, data]) => ({
@@ -43,7 +35,7 @@ export function saveToStorage(walletsData: Record<string, WalletData>) {
         },
       }), {}),
     };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToStore));
+    localStorage.setItem(STORAGE.KEYS.WALLET_DATA, JSON.stringify(dataToStore));
   } catch (error) {
     console.error('Error saving to storage:', error);
   }
