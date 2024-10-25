@@ -21,7 +21,10 @@ Currently the dashboard is in development and will be updated with new features 
 - Multiple nodes / wallets support
 - Auto-refresh
 - Persistent state using local storage
-- Transaction details
+- PoW transaction details
+- Node labeling
+- Node metrics (CPU, Memory, GPU, uptime, etc.)
+- Node leaderboard details (rank, energy, points)
 
 ## Components
 
