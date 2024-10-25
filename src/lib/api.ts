@@ -119,7 +119,7 @@ export async function fetchNodeMetrics(): Promise<Record<string, NodeMetrics>> {
 
 export async function fetchNodeStats(): Promise<Record<string, NodeStats>> {
   try {
-    const response = await fetch('https://api-testnet.lilypad.tech/metrics-dashboard/leaderboard');
+    const response = await fetch('https://jsondatapoint.blob.core.windows.net/jsondata/nodestats.json');
     const data = await response.json();
 
     return data.reduce((acc: Record<string, NodeStats>, node: any) => {
