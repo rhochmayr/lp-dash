@@ -1,7 +1,8 @@
-import { WalletTransaction, TransactionsByDate } from '@/types';
+import { WalletTransaction, TransactionsByDate, NodeMetrics, NodeStats } from '@/types';
 
 const API_BASE = 'https://api-sepolia.arbiscan.io/api';
 const START_BLOCK = 59995526;
+const TARGET_METHOD_ID = '0xda8accf9';
 
 export async function fetchWalletTransactions(address: string): Promise<WalletTransaction[]> {
   const allResults: WalletTransaction[] = [];
@@ -16,6 +17,10 @@ export async function fetchWalletTransactions(address: string): Promise<WalletTr
       const response = await fetch(uri);
       const data = await response.json();
 
+      if (data.status === '0') {
+        throw new Error(data.message || 'API request failed');
+      }
+
       if (data.result.length < offset) {
         hasMore = false;
       } else {
@@ -23,10 +28,10 @@ export async function fetchWalletTransactions(address: string): Promise<WalletTr
       }
 
       const transactions = data.result
-        .filter((tx: any) => tx.methodId === '0xda8accf9')
+        .filter((tx: any) => tx.methodId === TARGET_METHOD_ID)
         .map((tx: any) => ({
           blockNumber: tx.blockNumber,
-          timestamp: new Date(tx.timeStamp * 1000), // Ensure timestamp is a Date object
+          timestamp: new Date(parseInt(tx.timeStamp) * 1000),
           from: tx.from.toLowerCase(),
           to: tx.to?.toLowerCase(),
           methodId: tx.methodId,
@@ -39,6 +44,9 @@ export async function fetchWalletTransactions(address: string): Promise<WalletTr
       console.error('Error fetching transactions:', error);
       hasMore = false;
     }
+
+    // Add a small delay between requests to respect rate limits
+    await new Promise(resolve => setTimeout(resolve, 200));
   }
 
   return allResults;
@@ -46,14 +54,9 @@ export async function fetchWalletTransactions(address: string): Promise<WalletTr
 
 export function groupTransactionsByDate(
   transactions: WalletTransaction[],
-  address: string
 ): TransactionsByDate {
-  const powTransactions = transactions.filter(
-    tx => tx.from === address.toLowerCase() && tx.methodId === '0xda8accf9'
-  );
-
-  const byDate = powTransactions.reduce((acc, tx) => {
-    const dateStr = tx.timestamp.toLocaleDateString(); // Adjust to local date string
+  const byDate = transactions.reduce((acc, tx) => {
+    const dateStr = tx.timestamp.toISOString().split('T')[0];
     if (!acc[dateStr]) {
       acc[dateStr] = [];
     }
@@ -68,14 +71,14 @@ export function getHourlyTransactions(
   transactions: WalletTransaction[],
   date: Date
 ): { type1: boolean; type2: boolean; transactions: WalletTransaction[]; }[] {
-  const dateStr = date.toLocaleDateString(); // Adjust to local date string
+  const dateStr = date.toISOString().split('T')[0];
   const dayTransactions = transactions.filter(
-    tx => tx.timestamp.toLocaleDateString() === dateStr
+    tx => tx.timestamp.toISOString().split('T')[0] === dateStr
   );
 
   const hours = Array.from({ length: 24 }, (_, hour) => {
     const hourTransactions = dayTransactions.filter(tx => 
-      tx.timestamp.getHours() === hour // Adjust to local hour
+      tx.timestamp.getUTCHours() === hour
     );
 
     return {
@@ -86,4 +89,51 @@ export function getHourlyTransactions(
   });
 
   return hours;
+}
+
+export async function fetchNodeMetrics(): Promise<Record<string, NodeMetrics>> {
+  try {
+    const response = await fetch('https://api-testnet.lilypad.tech/metrics-dashboard/nodes');
+    const data = await response.json();
+
+    return data.reduce((acc: Record<string, NodeMetrics>, node: any) => {
+      const address = node.ID.toLowerCase();
+      acc[address] = {
+        cpu: node.CPU,
+        gpu: node.GPU,
+        ram: node.RAM,
+        online: node.Online,
+        connectedSince: new Date(node.ConnectedSince),
+        location: {
+          country: node.CountryCode,
+          city: node.City,
+        },
+      };
+      return acc;
+    }, {});
+  } catch (error) {
+    console.error('Error fetching node metrics:', error);
+    return {};
+  }
+}
+
+export async function fetchNodeStats(): Promise<Record<string, NodeStats>> {
+  try {
+    const response = await fetch('https://api-testnet.lilypad.tech/metrics-dashboard/leaderboard');
+    const data = await response.json();
+
+    return data.reduce((acc: Record<string, NodeStats>, node: any) => {
+      const address = node.Wallet.toLowerCase();
+      acc[address] = {
+        rank: node.Rank,
+        energy: node.Energy,
+        totalOnlineHours: node.TotalOnlineHours,
+        consecutiveDaysOnline: node.ConsecutiveDaysOnline,
+      };
+      return acc;
+    }, {});
+  } catch (error) {
+    console.error('Error fetching node stats:', error);
+    return {};
+  }
 }
