@@ -1,10 +1,9 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { toast } from 'sonner';
 import { fetchWalletTransactions, groupTransactionsByDate, getHourlyTransactions, fetchNodeMetrics, fetchNodeStats } from '@/lib/api';
 import { loadFromStorage, saveToStorage } from '@/lib/storage';
+import { TIME } from '@/constants';
 import type { WalletData, NodeMetrics, NodeStats } from '@/types';
-
-const REFRESH_INTERVAL = 300000; // 5 minutes
 
 export function useWalletData(date: Date) {
   const [walletsData, setWalletsData] = useState<Record<string, WalletData>>({});
@@ -13,10 +12,43 @@ export function useWalletData(date: Date) {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
   const [availableDates, setAvailableDates] = useState<Date[]>([]);
+  const initializationInProgress = useRef(false);
+
+  const updateDisplayedData = useCallback((selectedDate: Date) => {
+    setWalletsData((prev) => {
+      const updated = { ...prev };
+      Object.keys(updated).forEach((address) => {
+        if (!address) return;
+        const hours = getHourlyTransactions(
+          updated[address].transactions,
+          selectedDate
+        );
+        updated[address] = {
+          ...updated[address],
+          hours: Array.from({ length: 24 }, (_, i) => ({
+            hour: i,
+            transactions: hours[i],
+          })),
+        };
+      });
+      return updated;
+    });
+  }, []);
 
   const initializeWallet = useCallback(
     async (address: string, name?: string) => {
       const normalizedAddress = address.toLowerCase();
+      
+      setWalletsData((prev) => ({
+        ...prev,
+        [normalizedAddress]: {
+          ...prev[normalizedAddress],
+          address: normalizedAddress,
+          name,
+          isLoading: true,
+        },
+      }));
+
       try {
         const transactions = await fetchWalletTransactions(normalizedAddress);
         const transactionsByDate = groupTransactionsByDate(transactions);
@@ -25,24 +57,29 @@ export function useWalletData(date: Date) {
         setWalletsData((prev) => ({
           ...prev,
           [normalizedAddress]: {
-            address: normalizedAddress,
-            name,
+            ...prev[normalizedAddress],
             transactions,
             transactionsByDate,
             hours: Array.from({ length: 24 }, (_, i) => ({
               hour: i,
               transactions: hours[i],
             })),
-            metrics: nodeMetricsData[normalizedAddress],
-            stats: nodeStatsData[normalizedAddress],
             isLoading: false,
           },
         }));
       } catch (error) {
         console.error('Error initializing wallet:', error);
+        setWalletsData((prev) => ({
+          ...prev,
+          [normalizedAddress]: {
+            ...prev[normalizedAddress],
+            isLoading: false,
+            error: 'Failed to load wallet data',
+          },
+        }));
       }
     },
-    [date, nodeMetricsData, nodeStatsData]
+    [date]
   );
 
   const refreshWallets = useCallback(async () => {
@@ -54,6 +91,17 @@ export function useWalletData(date: Date) {
     let toastId: string | number | undefined;
 
     try {
+      setWalletsData((prev) => {
+        const updated = { ...prev };
+        Object.keys(updated).forEach((address) => {
+          updated[address] = {
+            ...updated[address],
+            isLoading: true,
+          };
+        });
+        return updated;
+      });
+
       toastId = toast.loading(`Refreshing data...`, {
         description: `Refreshing wallet transactions...`,
       });
@@ -71,6 +119,7 @@ export function useWalletData(date: Date) {
               ...prev[normalizedAddress],
               transactions,
               transactionsByDate,
+              isLoading: false,
             },
           }));
 
@@ -107,6 +156,7 @@ export function useWalletData(date: Date) {
             ...updated[address],
             metrics: metrics[address],
             stats: stats[address],
+            isLoading: false,
           };
         });
         return updated;
@@ -125,88 +175,68 @@ export function useWalletData(date: Date) {
     } finally {
       setIsRefreshing(false);
     }
-  }, [walletsData, date, isInitialized]);
-
-  const updateDisplayedData = useCallback((selectedDate: Date) => {
-    setWalletsData((prev) => {
-      const updated = { ...prev };
-      Object.keys(updated).forEach((address) => {
-        if (!address) return;
-        const hours = getHourlyTransactions(
-          updated[address].transactions,
-          selectedDate
-        );
-        updated[address] = {
-          ...updated[address],
-          hours: Array.from({ length: 24 }, (_, i) => ({
-            hour: i,
-            transactions: hours[i],
-          })),
-        };
-      });
-      return updated;
-    });
-  }, []);
+  }, [walletsData, date, isInitialized, updateDisplayedData]);
 
   useEffect(() => {
-    const loadInitialData = async () => {
-      if (isInitialized) return;
+    async function loadInitialData() {
+      if (isInitialized || initializationInProgress.current) return;
+      initializationInProgress.current = true;
 
-      const savedData = loadFromStorage();
-
-      const toastId = toast.loading('Fetching node data...');
       try {
-        const metrics = await fetchNodeMetrics();
-        const stats = await fetchNodeStats();
+        const savedData = loadFromStorage();
+        const [metrics, stats] = await Promise.all([
+          fetchNodeMetrics(),
+          fetchNodeStats()
+        ]);
 
         setNodeMetricsData(metrics);
         setNodeStatsData(stats);
 
-        toast.success('Node data fetched', { id: toastId });
+        const initialWallets = Object.entries(savedData.wallets).reduce(
+          (acc, [address, data]) => {
+            const normalizedAddress = address?.toLowerCase() || '';
+            if (!normalizedAddress) return acc;
+
+            return {
+              ...acc,
+              [normalizedAddress]: {
+                address: normalizedAddress,
+                name: data.name,
+                transactions: [],
+                transactionsByDate: {},
+                hours: Array.from({ length: 24 }, (_, i) => ({
+                  hour: i,
+                  transactions: { type1: false, type2: false, transactions: [] },
+                })),
+                metrics: metrics[normalizedAddress],
+                stats: stats[normalizedAddress],
+                isLoading: true,
+              },
+            };
+          },
+          {} as Record<string, WalletData>
+        );
+
+        setWalletsData(initialWallets);
+
+        const addresses = Object.keys(initialWallets);
+        await Promise.all(
+          addresses.map((address) =>
+            initializeWallet(address, savedData.wallets[address].name)
+          )
+        );
+
+        setIsInitialized(true);
       } catch (error) {
-        console.error('Error fetching node data:', error);
-        toast.error('Failed to fetch node data', { id: toastId });
+        console.error('Error during initial load:', error);
+        toast.error('Failed to load initial data');
+      } finally {
+        initializationInProgress.current = false;
       }
-
-      const initialWallets = Object.entries(savedData.wallets).reduce(
-        (acc, [address, data]) => {
-          const normalizedAddress = address?.toLowerCase() || '';
-          if (!normalizedAddress) return acc;
-
-          return {
-            ...acc,
-            [normalizedAddress]: {
-              address: normalizedAddress,
-              name: data.name,
-              transactions: [],
-              transactionsByDate: {},
-              hours: Array.from({ length: 24 }, (_, i) => ({
-                hour: i,
-                transactions: { type1: false, type2: false, transactions: [] },
-              })),
-              metrics: nodeMetricsData[normalizedAddress],
-              stats: nodeStatsData[normalizedAddress],
-              isLoading: true,
-            },
-          };
-        },
-        {} as Record<string, WalletData>
-      );
-
-      setWalletsData(initialWallets);
-
-      const addresses = Object.keys(initialWallets);
-      await Promise.all(
-        addresses.map((address) =>
-          initializeWallet(address, savedData.wallets[address].name)
-        )
-      );
-
-      setIsInitialized(true);
-    };
+    }
 
     loadInitialData();
-  }, [initializeWallet, date, isInitialized, nodeMetricsData, nodeStatsData]);
+  }, [initializeWallet, isInitialized]);
 
   useEffect(() => {
     if (!isInitialized) return;
@@ -215,7 +245,7 @@ export function useWalletData(date: Date) {
 
   useEffect(() => {
     if (!isInitialized) return;
-    const interval = setInterval(refreshWallets, REFRESH_INTERVAL);
+    const interval = setInterval(refreshWallets, TIME.REFRESH_INTERVAL);
     return () => clearInterval(interval);
   }, [refreshWallets, isInitialized]);
 

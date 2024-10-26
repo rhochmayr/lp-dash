@@ -93,7 +93,7 @@ export function getHourlyTransactions(
 
 export async function fetchNodeMetrics(): Promise<Record<string, NodeMetrics>> {
   try {
-    const response = await fetch('https://api-testnet.lilypad.tech/metrics-dashboard/nodes');
+    const response = await fetch('https://jsondatapoint.blob.core.windows.net/jsondata/nodemetrics.json');
     const data = await response.json();
 
     return data.reduce((acc: Record<string, NodeMetrics>, node: any) => {

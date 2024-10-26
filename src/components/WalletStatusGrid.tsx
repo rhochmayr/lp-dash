@@ -23,6 +23,14 @@ export function WalletStatusGrid({
   const currentUTCHour = now.getUTCHours();
   const isCurrentDate = selectedDate.getTime() === currentUTCDate.getTime();
 
+  if (wallets.length === 0) {
+    return (
+      <div className="p-4 text-center text-muted-foreground">
+        No nodes added yet. Add a node using the form above.
+      </div>
+    );
+  }
+
   return (
     <div className="p-4 space-y-4">
       <WalletGridHeader />

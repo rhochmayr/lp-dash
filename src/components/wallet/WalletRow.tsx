@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
-import { X, Pencil } from 'lucide-react';
+import { X, Pencil, Loader2 } from 'lucide-react';
 import { NodeMetrics } from '../node/NodeMetrics';
 import { WalletHourCell } from './WalletHourCell';
 import type { NodeStatus } from '@/types';
@@ -124,8 +124,8 @@ export function WalletRow({
       </div>
 
       {wallet.isLoading ? (
-        <div className="col-span-24 flex justify-center">
-          <div className="animate-spin rounded-full h-4 w-4 border-2 border-primary border-t-transparent" />
+        <div className="col-span-24 flex justify-center items-center">
+          <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
         </div>
       ) : (
         wallet.hours?.map((hour) => (
