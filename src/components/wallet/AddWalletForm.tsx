@@ -3,10 +3,15 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Plus, Wallet } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface AddWalletFormProps {
   onAddWallet: (address: string) => void;
   isInitialized: boolean;
+}
+
+function isValidEthereumAddress(address: string): boolean {
+  return /^0x[a-fA-F0-9]{40}$/.test(address);
 }
 
 export function AddWalletForm({ onAddWallet, isInitialized }: AddWalletFormProps) {
@@ -14,8 +19,25 @@ export function AddWalletForm({ onAddWallet, isInitialized }: AddWalletFormProps
 
   const handleSubmit = () => {
     const trimmedWallet = newWallet.trim();
+    
+    if (!trimmedWallet) {
+      toast.error('Please enter a wallet address');
+      return;
+    }
+
+    if (!isValidEthereumAddress(trimmedWallet)) {
+      toast.error('Please enter a valid Ethereum address');
+      return;
+    }
+
     onAddWallet(trimmedWallet);
     setNewWallet('');
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleSubmit();
+    }
   };
 
   return (
@@ -31,6 +53,7 @@ export function AddWalletForm({ onAddWallet, isInitialized }: AddWalletFormProps
               placeholder="Enter Ethereum wallet address"
               value={newWallet}
               onChange={(e) => setNewWallet(e.target.value)}
+              onKeyDown={handleKeyDown}
               className="pl-9"
             />
           </div>

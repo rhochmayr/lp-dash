@@ -1,4 +1,4 @@
-import { WalletTransaction } from '@/types';
+import type { Transaction as WalletTransaction } from '@/types/transactions';
 import { API_CONFIG, ApiError } from './config';
 
 export async function fetchWalletTransactions(
@@ -7,8 +7,8 @@ export async function fetchWalletTransactions(
 ): Promise<WalletTransaction[]> {
   const allResults: WalletTransaction[] = [];
   let endBlock = 100000000;
-  let hasMore = true;
   const effectiveStartBlock = startBlock || API_CONFIG.START_BLOCK;
+  let hasMore = true;
 
   while (hasMore) {
     const uri = `${API_CONFIG.BASE_URL}?module=account&action=txlist&address=${address}&startblock=${effectiveStartBlock}&endblock=${endBlock}&offset=${API_CONFIG.BATCH_SIZE}&sort=desc`;

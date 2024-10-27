@@ -1,7 +1,7 @@
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { CheckCircle2, XCircle, CircleDashed, Loader2 } from 'lucide-react';
-import type { NodeStatus, TransactionHour, Transaction } from '@/types';
+import type { NodeStatus, Transaction, TransactionHour } from '@/types';
 
 interface WalletHourCellProps {
   hour: TransactionHour;
@@ -20,7 +20,7 @@ export function WalletHourCell({
 }: WalletHourCellProps) {
   const isFutureHour = isCurrentDate && hour.hour > currentUTCHour;
   const isCurrentHour = isCurrentDate && hour.hour === currentUTCHour;
-  const isRefreshing = wallet.isLoading || wallet.refreshingWallet === wallet.address;
+  const isRefreshing = isCurrentHour && wallet.isLoading;
 
   return (
     <TooltipProvider>
