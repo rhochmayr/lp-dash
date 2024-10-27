@@ -5,6 +5,7 @@ import { WalletStatusGrid } from '@/components/wallet/WalletStatusGrid';
 import { AddWalletForm } from '@/components/wallet/AddWalletForm';
 import { DashboardHeader } from '@/components/header/DashboardHeader';
 import { DashboardControls } from '@/components/controls/DashboardControls';
+import { MobileWalletView } from '@/components/wallet/MobileWalletView';
 import { useWalletData } from '@/hooks/useWalletData';
 
 function App() {
@@ -14,6 +15,7 @@ function App() {
   );
 
   const [date, setDate] = useState<Date>(currentUTCDate);
+  const [selectedWallet, setSelectedWallet] = useState<string | null>(null);
   const [showNames, setShowNames] = useState(() => {
     try {
       return localStorage.getItem('show-names') === 'true';
@@ -34,6 +36,20 @@ function App() {
     updateWalletName
   } = useWalletData(date);
 
+  // Reset selected wallet if it's removed
+  useEffect(() => {
+    if (selectedWallet && !walletsData[selectedWallet]) {
+      setSelectedWallet(null);
+    }
+  }, [walletsData, selectedWallet]);
+
+  // Auto-select first wallet on mobile if none selected
+  useEffect(() => {
+    if (!selectedWallet && Object.keys(walletsData).length > 0) {
+      setSelectedWallet(Object.keys(walletsData)[0]);
+    }
+  }, [walletsData, selectedWallet]);
+
   useEffect(() => {
     localStorage.setItem('show-names', showNames.toString());
   }, [showNames]);
@@ -50,7 +66,7 @@ function App() {
     }));
 
   return (
-    <div className="min-h-screen bg-background p-8">
+    <div className="min-h-screen bg-background p-4 md:p-8">
       <Toaster />
       <div className="max-w-[1800px] mx-auto space-y-8">
         <DashboardHeader
@@ -71,19 +87,38 @@ function App() {
           currentUTCDate={currentUTCDate}
         />
 
-        <AddWalletForm onAddWallet={addWallet} isInitialized={isInitialized} />
+        <AddWalletForm 
+          onAddWallet={addWallet} 
+          isInitialized={isInitialized} 
+        />
 
-        <ScrollArea className="rounded-md border">
-          <WalletStatusGrid
+        {/* Desktop View */}
+        <div className="hidden wide:block">
+          <ScrollArea className="rounded-md border">
+            <WalletStatusGrid
+              wallets={walletStatuses}
+              onRemoveWallet={removeWallet}
+              onUpdateName={updateWalletName}
+              showNames={showNames}
+              selectedDate={date}
+              isRefreshing={isRefreshing}
+              refreshingWallet={refreshingWallet}
+            />
+          </ScrollArea>
+        </div>
+
+        {/* Mobile View */}
+        <div className="wide:hidden">
+          <MobileWalletView
             wallets={walletStatuses}
+            selectedWallet={selectedWallet}
+            onWalletSelect={setSelectedWallet}
             onRemoveWallet={removeWallet}
             onUpdateName={updateWalletName}
             showNames={showNames}
             selectedDate={date}
-            isRefreshing={isRefreshing}
-            refreshingWallet={refreshingWallet}
           />
-        </ScrollArea>
+        </div>
 
         <DashboardControls
           onRefresh={refreshWallets}

@@ -20,18 +20,18 @@ export function DashboardControls({
   onShowNamesChange,
 }: DashboardControlsProps) {
   return (
-    <div className="flex items-center gap-4">
+    <div className="flex flex-col wide:flex-row items-start wide:items-center gap-4">
       <Button
         variant="outline"
         onClick={onRefresh}
         disabled={isRefreshing || !isInitialized}
-        className="gap-2"
+        className="gap-2 w-full wide:w-auto"
       >
         <RotateCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
         Refresh Data
       </Button>
-      <Separator orientation="vertical" className="h-6" />
-      <div className="flex items-center space-x-2">
+      <Separator className="hidden wide:block" orientation="vertical" />
+      <div className="flex items-center space-x-2 w-full wide:w-auto">
         <Switch
           id="show-names"
           checked={showNames}

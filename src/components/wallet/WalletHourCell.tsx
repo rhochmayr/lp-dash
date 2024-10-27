@@ -9,6 +9,7 @@ interface WalletHourCellProps {
   showNames: boolean;
   isCurrentDate: boolean;
   currentUTCHour: number;
+  isInitialLoad?: boolean;
 }
 
 export function WalletHourCell({
@@ -17,10 +18,12 @@ export function WalletHourCell({
   showNames,
   isCurrentDate,
   currentUTCHour,
+  isInitialLoad = false,
 }: WalletHourCellProps) {
   const isFutureHour = isCurrentDate && hour.hour > currentUTCHour;
   const isCurrentHour = isCurrentDate && hour.hour === currentUTCHour;
   const isRefreshing = isCurrentHour && wallet.isLoading;
+  const shouldShowLoadingOnly = isInitialLoad && wallet.isLoading && !isFutureHour;
 
   return (
     <TooltipProvider>
@@ -29,6 +32,10 @@ export function WalletHourCell({
           <div className="flex flex-col items-center gap-1 p-1 rounded-md bg-muted/50">
             {isFutureHour ? (
               <div className="text-center text-muted-foreground">--:--</div>
+            ) : shouldShowLoadingOnly ? (
+              <div className="flex gap-1">
+                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+              </div>
             ) : isCurrentHour && isRefreshing ? (
               <>
                 <div className="flex gap-1">
@@ -94,8 +101,8 @@ export function WalletHourCell({
             <p>Hour: {hour.hour.toString().padStart(2, '0')}:00 UTC</p>
             {isFutureHour ? (
               <p>Status: Pending - Hour not yet reached</p>
-            ) : isCurrentHour && isRefreshing ? (
-              <p>Status: Refreshing data...</p>
+            ) : shouldShowLoadingOnly || (isCurrentHour && isRefreshing) ? (
+              <p>Status: Loading data...</p>
             ) : isCurrentHour ? (
               <>
                 <p>Status: {!hour.transactions.type1 ? 'Waiting for first transaction' : !hour.transactions.type2 ? 'Waiting for second transaction' : 'All transactions complete'}</p>

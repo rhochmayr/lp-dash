@@ -46,7 +46,7 @@ export function AddWalletForm({ onAddWallet, isInitialized }: AddWalletFormProps
         <CardTitle>Add Node</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="flex gap-4">
+        <div className="flex flex-col gap-4 xl:flex-row">
           <div className="relative flex-1">
             <Wallet className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
             <Input
@@ -57,7 +57,11 @@ export function AddWalletForm({ onAddWallet, isInitialized }: AddWalletFormProps
               className="pl-9"
             />
           </div>
-          <Button onClick={handleSubmit} disabled={!isInitialized}>
+          <Button 
+            onClick={handleSubmit} 
+            disabled={!isInitialized}
+            className="w-full xl:w-auto"
+          >
             <Plus className="mr-2 h-4 w-4" />
             Add Node
           </Button>
