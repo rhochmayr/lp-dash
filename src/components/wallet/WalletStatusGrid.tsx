@@ -1,6 +1,6 @@
 import { Card, CardContent } from '@/components/ui/card';
-import { WalletGridHeader } from './wallet/WalletGridHeader';
-import { WalletRow } from './wallet/WalletRow';
+import { WalletGridHeader } from './WalletGridHeader';
+import { WalletRow } from './WalletRow';
 import type { NodeStatus } from '@/types';
 
 interface WalletStatusGridProps {
@@ -9,6 +9,8 @@ interface WalletStatusGridProps {
   onUpdateName: (address: string, name: string) => void;
   showNames: boolean;
   selectedDate: Date;
+  isRefreshing?: boolean;
+  refreshingWallet?: string | null;
 }
 
 export function WalletStatusGrid({ 
@@ -16,7 +18,9 @@ export function WalletStatusGrid({
   onRemoveWallet, 
   onUpdateName, 
   showNames, 
-  selectedDate 
+  selectedDate,
+  isRefreshing,
+  refreshingWallet
 }: WalletStatusGridProps) {
   const now = new Date();
   const currentUTCDate = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
@@ -46,6 +50,8 @@ export function WalletStatusGrid({
               onUpdateName={onUpdateName}
               currentUTCHour={currentUTCHour}
               isCurrentDate={isCurrentDate}
+              isRefreshing={isRefreshing}
+              refreshingWallet={refreshingWallet}
             />
           </CardContent>
         </Card>

@@ -22,11 +22,3 @@ export interface TransactionHour {
   hour: number;
   transactions: HourlyTransactions;
 }
-
-export interface HourData {
-  hour: number;
-  transactions: HourlyTransactions;
-}
-
-// Add alias for backward compatibility
-export type WalletTransaction = Transaction;

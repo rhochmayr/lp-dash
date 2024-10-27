@@ -1,6 +1,6 @@
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { CheckCircle2, XCircle, CircleDashed } from 'lucide-react';
+import { CheckCircle2, XCircle, CircleDashed, Loader2 } from 'lucide-react';
 import type { NodeStatus, TransactionHour, Transaction } from '@/types';
 
 interface WalletHourCellProps {
@@ -20,6 +20,7 @@ export function WalletHourCell({
 }: WalletHourCellProps) {
   const isFutureHour = isCurrentDate && hour.hour > currentUTCHour;
   const isCurrentHour = isCurrentDate && hour.hour === currentUTCHour;
+  const isRefreshing = wallet.isLoading || wallet.refreshingWallet === wallet.address;
 
   return (
     <TooltipProvider>
@@ -28,6 +29,15 @@ export function WalletHourCell({
           <div className="flex flex-col items-center gap-1 p-1 rounded-md bg-muted/50">
             {isFutureHour ? (
               <div className="text-center text-muted-foreground">--:--</div>
+            ) : isCurrentHour && isRefreshing ? (
+              <>
+                <div className="flex gap-1">
+                  <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                </div>
+                <Badge variant="secondary" className="text-[10px] h-4">
+                  WAIT
+                </Badge>
+              </>
             ) : isCurrentHour ? (
               <>
                 <div className="flex gap-1">
@@ -84,6 +94,8 @@ export function WalletHourCell({
             <p>Hour: {hour.hour.toString().padStart(2, '0')}:00 UTC</p>
             {isFutureHour ? (
               <p>Status: Pending - Hour not yet reached</p>
+            ) : isCurrentHour && isRefreshing ? (
+              <p>Status: Refreshing data...</p>
             ) : isCurrentHour ? (
               <>
                 <p>Status: {!hour.transactions.type1 ? 'Waiting for first transaction' : !hour.transactions.type2 ? 'Waiting for second transaction' : 'All transactions complete'}</p>

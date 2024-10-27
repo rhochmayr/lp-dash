@@ -2,14 +2,16 @@ import { WalletTransaction } from '@/types';
 import { API_CONFIG, ApiError } from './config';
 
 export async function fetchWalletTransactions(
-  address: string
+  address: string,
+  startBlock?: string
 ): Promise<WalletTransaction[]> {
   const allResults: WalletTransaction[] = [];
   let endBlock = 100000000;
   let hasMore = true;
+  const effectiveStartBlock = startBlock || API_CONFIG.START_BLOCK;
 
   while (hasMore) {
-    const uri = `${API_CONFIG.BASE_URL}?module=account&action=txlist&address=${address}&startblock=${API_CONFIG.START_BLOCK}&endblock=${endBlock}&offset=${API_CONFIG.BATCH_SIZE}&sort=desc`;
+    const uri = `${API_CONFIG.BASE_URL}?module=account&action=txlist&address=${address}&startblock=${effectiveStartBlock}&endblock=${endBlock}&offset=${API_CONFIG.BATCH_SIZE}&sort=desc`;
 
     try {
       const response = await fetch(uri);
@@ -53,6 +55,19 @@ export async function fetchWalletTransactions(
   }
 
   return allResults;
+}
+
+export function mergeTransactions(existing: WalletTransaction[], newTxs: WalletTransaction[]): WalletTransaction[] {
+  const txMap = new Map<string, WalletTransaction>();
+  
+  // Add existing transactions to map
+  existing.forEach(tx => txMap.set(tx.hash, tx));
+  
+  // Add or update with new transactions
+  newTxs.forEach(tx => txMap.set(tx.hash, tx));
+  
+  // Convert back to array and sort by timestamp descending
+  return Array.from(txMap.values()).sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
 }
 
 export function groupTransactionsByDate(

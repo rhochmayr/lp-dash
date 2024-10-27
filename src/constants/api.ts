@@ -1,7 +1,7 @@
 export const API = {
   ENDPOINTS: {
     BASE: 'https://api-sepolia.arbiscan.io/api',
-    METRICS: 'https://api-testnet.lilypad.tech/metrics-dashboard/nodes',
+    METRICS: 'https://jsondatapoint.blob.core.windows.net/jsondata/nodemetrics.json',
     STATS: 'https://jsondatapoint.blob.core.windows.net/jsondata/nodestats.json',
   },
   PARAMS: {

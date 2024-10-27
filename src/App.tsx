@@ -1,12 +1,11 @@
 import { useState, useEffect } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Toaster } from 'sonner';
-import { WalletStatusGrid } from '@/components/WalletStatusGrid';
+import { WalletStatusGrid } from '@/components/wallet/WalletStatusGrid';
 import { AddWalletForm } from '@/components/wallet/AddWalletForm';
 import { DashboardHeader } from '@/components/header/DashboardHeader';
 import { DashboardControls } from '@/components/controls/DashboardControls';
 import { useWalletData } from '@/hooks/useWalletData';
-import type { WalletStatus } from '@/types';
 
 function App() {
   const now = new Date();
@@ -15,7 +14,6 @@ function App() {
   );
 
   const [date, setDate] = useState<Date>(currentUTCDate);
-  const [availableDates, setAvailableDates] = useState<Date[]>([]);
   const [showNames, setShowNames] = useState(() => {
     try {
       return localStorage.getItem('show-names') === 'true';
@@ -28,27 +26,19 @@ function App() {
     walletsData,
     isInitialized,
     isRefreshing,
+    refreshWallets,
+    availableDates,
+    refreshingWallet,
     addWallet,
     removeWallet,
-    updateWalletName,
-    refreshWallets
+    updateWalletName
   } = useWalletData(date);
 
   useEffect(() => {
     localStorage.setItem('show-names', showNames.toString());
   }, [showNames]);
 
-  useEffect(() => {
-    const dates = new Set<string>();
-    Object.values(walletsData).forEach((wallet) => {
-      if (!wallet?.transactionsByDate) return;
-      Object.keys(wallet.transactionsByDate).forEach((date) => dates.add(date));
-    });
-
-    setAvailableDates(Array.from(dates).map((dateStr) => new Date(dateStr)));
-  }, [walletsData]);
-
-  const walletStatuses: WalletStatus[] = Object.values(walletsData)
+  const walletStatuses = Object.values(walletsData)
     .filter((wallet) => wallet && wallet.address)
     .map((wallet) => ({
       address: wallet.address,
@@ -90,6 +80,8 @@ function App() {
             onUpdateName={updateWalletName}
             showNames={showNames}
             selectedDate={date}
+            isRefreshing={isRefreshing}
+            refreshingWallet={refreshingWallet}
           />
         </ScrollArea>
 

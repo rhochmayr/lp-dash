@@ -15,6 +15,8 @@ interface WalletRowProps {
   onUpdateName: (address: string, name: string) => void;
   currentUTCHour: number;
   isCurrentDate: boolean;
+  isRefreshing?: boolean;
+  refreshingWallet?: string | null;
 }
 
 export function WalletRow({
@@ -24,6 +26,8 @@ export function WalletRow({
   onUpdateName,
   currentUTCHour,
   isCurrentDate,
+  isRefreshing,
+  refreshingWallet,
 }: WalletRowProps) {
   const [editingAddress, setEditingAddress] = useState<string | null>(null);
   const [editName, setEditName] = useState('');
@@ -60,6 +64,10 @@ export function WalletRow({
       acc + hour.transactions.transactions.length, 0);
   };
 
+  const isCurrentlyRefreshing = isRefreshing && refreshingWallet === wallet.address;
+  const displayText = showNames && wallet.name ? wallet.name : wallet.address;
+  const displayValue = isCurrentlyRefreshing ? `> ${displayText}` : displayText;
+
   return (
     <div className="grid grid-cols-[250px_repeat(24,minmax(40px,1fr))] gap-2 items-center">
       <div className="flex items-center justify-between pr-4">
@@ -87,7 +95,7 @@ export function WalletRow({
             <HoverCard>
               <HoverCardTrigger asChild>
                 <Button variant="link" className="p-0 h-auto font-medium">
-                  {truncateText(showNames && wallet.name ? wallet.name : wallet.address)}
+                  {truncateText(displayValue)}
                 </Button>
               </HoverCardTrigger>
               <HoverCardContent className="w-96">

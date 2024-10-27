@@ -13,7 +13,8 @@ export function AddWalletForm({ onAddWallet, isInitialized }: AddWalletFormProps
   const [newWallet, setNewWallet] = useState('');
 
   const handleSubmit = () => {
-    onAddWallet(newWallet);
+    const trimmedWallet = newWallet.trim();
+    onAddWallet(trimmedWallet);
     setNewWallet('');
   };
 
