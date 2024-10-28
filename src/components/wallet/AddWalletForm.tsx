@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Plus, Wallet } from 'lucide-react';
 import { toast } from 'sonner';
@@ -48,7 +48,7 @@ export function AddWalletForm({ onAddWallet, isInitialized }: AddWalletFormProps
     setNewWallets('');
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter') {
       handleSubmit();
     }
@@ -63,13 +63,13 @@ export function AddWalletForm({ onAddWallet, isInitialized }: AddWalletFormProps
         <div className="flex flex-col gap-4 xl:flex-row">
           <div className="relative flex-1">
             <Wallet className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-            <Input
+            <Textarea
               placeholder="Enter wallet address(es)"
               value={newWallets}
               onChange={(e) => setNewWallets(e.target.value)}
               onKeyDown={handleKeyDown}
               className="pl-9"
-              multiline
+              maxLength={2500}
             />
           </div>
           <Button 

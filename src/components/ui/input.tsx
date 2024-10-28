@@ -2,12 +2,10 @@ import * as React from 'react';
 import { cn } from '@/lib/utils';
 
 export interface InputProps
-  extends React.InputHTMLAttributes<HTMLInputElement> {
-  multiline?: boolean; // Add this line to define the prop
-}
+  extends React.InputHTMLAttributes<HTMLInputElement> {}
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ className, type, multiline, ...props }, ref) => {
+  ({ className, type, ...props }, ref) => {
     return (
       <input
         type={type}
@@ -16,7 +14,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           className
         )}
         ref={ref}
-        {...props} // Ensure multiline is not spread to the input element
+        {...props}
       />
     );
   }
