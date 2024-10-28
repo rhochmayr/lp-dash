@@ -26,8 +26,8 @@ export function AddWalletForm({ onAddWallet, isInitialized }: AddWalletFormProps
     }
 
     const addresses = trimmedWallets.split(/[\s,]+/);
-    const validAddresses = [];
-    const invalidAddresses = [];
+    const validAddresses: string[] = [];
+    const invalidAddresses: string[] = [];
 
     addresses.forEach((address) => {
       if (isValidEthereumAddress(address)) {
@@ -64,7 +64,7 @@ export function AddWalletForm({ onAddWallet, isInitialized }: AddWalletFormProps
           <div className="relative flex-1">
             <Wallet className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Enter Ethereum wallet addresses (comma-separated or multiline)"
+              placeholder="Enter wallet address(es)"
               value={newWallets}
               onChange={(e) => setNewWallets(e.target.value)}
               onKeyDown={handleKeyDown}

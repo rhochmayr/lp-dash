@@ -191,7 +191,7 @@ export function useWalletData(selectedDate: Date) {
     };
 
     loadInitialData();
-  }, []);
+  }, [isInitialized]);
 
   // Load wallet data after initialization
   useEffect(() => {
@@ -203,7 +203,7 @@ export function useWalletData(selectedDate: Date) {
     };
 
     loadWalletData();
-  }, [isInitialized, walletsData, refreshWallets]);
+  }, [isInitialized, walletsData, refreshWallets, isRefreshing]);
 
   useEffect(() => {
     if (!isInitialized) return;
@@ -216,7 +216,10 @@ export function useWalletData(selectedDate: Date) {
     return () => clearInterval(interval);
   }, [refreshWallets, isInitialized]);
 
-  const addWallet = async (newWallets: string[]) => {
+  const addWallet = async (newWallets: string[] | string) => {
+    if (!Array.isArray(newWallets)) {
+      newWallets = [newWallets];
+    }
     const validAddresses: string[] = [];
     const invalidAddresses: string[] = [];
 
