@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Plus, Wallet } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface AddWalletFormProps {
-  onAddWallet: (address: string) => void;
+  onAddWallet: (addresses: string[]) => void;
   isInitialized: boolean;
 }
 
@@ -15,26 +15,40 @@ function isValidEthereumAddress(address: string): boolean {
 }
 
 export function AddWalletForm({ onAddWallet, isInitialized }: AddWalletFormProps) {
-  const [newWallet, setNewWallet] = useState('');
+  const [newWallets, setNewWallets] = useState('');
 
   const handleSubmit = () => {
-    const trimmedWallet = newWallet.trim();
+    const trimmedWallets = newWallets.trim();
     
-    if (!trimmedWallet) {
-      toast.error('Please enter a wallet address');
+    if (!trimmedWallets) {
+      toast.error('Please enter one or more wallet addresses');
       return;
     }
 
-    if (!isValidEthereumAddress(trimmedWallet)) {
-      toast.error('Please enter a valid Ethereum address');
-      return;
+    const addresses = trimmedWallets.split(/[\s,]+/);
+    const validAddresses: string[] = [];
+    const invalidAddresses: string[] = [];
+
+    addresses.forEach((address) => {
+      if (isValidEthereumAddress(address)) {
+        validAddresses.push(address);
+      } else {
+        invalidAddresses.push(address);
+      }
+    });
+
+    if (invalidAddresses.length > 0) {
+      toast.error(`Invalid addresses: ${invalidAddresses.join(', ')}`);
     }
 
-    onAddWallet(trimmedWallet);
-    setNewWallet('');
+    if (validAddresses.length > 0) {
+      onAddWallet(validAddresses);
+    }
+
+    setNewWallets('');
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter') {
       handleSubmit();
     }
@@ -43,18 +57,19 @@ export function AddWalletForm({ onAddWallet, isInitialized }: AddWalletFormProps
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Add Node</CardTitle>
+        <CardTitle>Add Nodes</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="flex flex-col gap-4 xl:flex-row">
           <div className="relative flex-1">
             <Wallet className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Enter Ethereum wallet address"
-              value={newWallet}
-              onChange={(e) => setNewWallet(e.target.value)}
+            <Textarea
+              placeholder="Enter wallet address(es)"
+              value={newWallets}
+              onChange={(e) => setNewWallets(e.target.value)}
               onKeyDown={handleKeyDown}
               className="pl-9"
+              maxLength={2500}
             />
           </div>
           <Button 
@@ -63,7 +78,7 @@ export function AddWalletForm({ onAddWallet, isInitialized }: AddWalletFormProps
             className="w-full xl:w-auto"
           >
             <Plus className="mr-2 h-4 w-4" />
-            Add Node
+            Add Nodes
           </Button>
         </div>
       </CardContent>

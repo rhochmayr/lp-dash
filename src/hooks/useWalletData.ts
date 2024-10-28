@@ -191,7 +191,7 @@ export function useWalletData(selectedDate: Date) {
     };
 
     loadInitialData();
-  }, []);
+  }, [isInitialized]);
 
   // Load wallet data after initialization
   useEffect(() => {
@@ -203,7 +203,7 @@ export function useWalletData(selectedDate: Date) {
     };
 
     loadWalletData();
-  }, [isInitialized, walletsData, refreshWallets]);
+  }, [isInitialized, walletsData, refreshWallets, isRefreshing]);
 
   useEffect(() => {
     if (!isInitialized) return;
@@ -216,62 +216,77 @@ export function useWalletData(selectedDate: Date) {
     return () => clearInterval(interval);
   }, [refreshWallets, isInitialized]);
 
-  const addWallet = async (newWallet: string) => {
-    if (!newWallet) return;
-    const normalizedAddress = newWallet.toLowerCase();
-    if (walletsData[normalizedAddress]) {
-      toast.error('Node already exists');
-      return;
+  const addWallet = async (newWallets: string[] | string) => {
+    if (!Array.isArray(newWallets)) {
+      newWallets = [newWallets];
+    }
+    const validAddresses: string[] = [];
+    const invalidAddresses: string[] = [];
+
+    newWallets.forEach((newWallet) => {
+      if (!newWallet) return;
+      const normalizedAddress = newWallet.toLowerCase();
+      if (walletsData[normalizedAddress]) {
+        invalidAddresses.push(newWallet);
+      } else {
+        validAddresses.push(normalizedAddress);
+      }
+    });
+
+    if (invalidAddresses.length > 0) {
+      toast.error(`Invalid addresses: ${invalidAddresses.join(', ')}`);
     }
 
-    const initialWalletData: WalletData = {
-      address: normalizedAddress,
-      transactions: [],
-      transactionsByDate: {},
-      hours: Array.from({ length: 24 }, (_, i) => ({
-        hour: i,
-        transactions: { type1: false, type2: false, transactions: [] },
-      })),
-      metrics: nodeMetricsData[normalizedAddress],
-      stats: nodeStatsData[normalizedAddress],
-      isLoading: true,
-    };
-
-    setWalletsData((prev) => ({
-      ...prev,
-      [normalizedAddress]: initialWalletData,
-    }));
-
-    try {
-      const transactions = await fetchWalletTransactions(normalizedAddress);
-      const transactionsByDate = groupTransactionsByDate(transactions);
-      const hours = getHourlyTransactions(transactions, selectedDate);
+    for (const normalizedAddress of validAddresses) {
+      const initialWalletData: WalletData = {
+        address: normalizedAddress,
+        transactions: [],
+        transactionsByDate: {},
+        hours: Array.from({ length: 24 }, (_, i) => ({
+          hour: i,
+          transactions: { type1: false, type2: false, transactions: [] },
+        })),
+        metrics: nodeMetricsData[normalizedAddress],
+        stats: nodeStatsData[normalizedAddress],
+        isLoading: true,
+      };
 
       setWalletsData((prev) => ({
         ...prev,
-        [normalizedAddress]: {
-          ...prev[normalizedAddress],
-          transactions,
-          transactionsByDate,
-          hours: Array.from({ length: 24 }, (_, i) => ({
-            hour: i,
-            transactions: hours[i],
-          })),
-          isLoading: false,
-        },
+        [normalizedAddress]: initialWalletData,
       }));
 
-      toast.success('Node added successfully');
-    } catch (error) {
-      console.error('Error fetching wallet data:', error);
-      setWalletsData((prev) => {
-        const newData = { ...prev };
-        delete newData[normalizedAddress];
-        return newData;
-      });
-      toast.error('Failed to add node', {
-        description: 'Please check the address and try again',
-      });
+      try {
+        const transactions = await fetchWalletTransactions(normalizedAddress);
+        const transactionsByDate = groupTransactionsByDate(transactions);
+        const hours = getHourlyTransactions(transactions, selectedDate);
+
+        setWalletsData((prev) => ({
+          ...prev,
+          [normalizedAddress]: {
+            ...prev[normalizedAddress],
+            transactions,
+            transactionsByDate,
+            hours: Array.from({ length: 24 }, (_, i) => ({
+              hour: i,
+              transactions: hours[i],
+            })),
+            isLoading: false,
+          },
+        }));
+
+        toast.success(`Node ${normalizedAddress} added successfully`);
+      } catch (error) {
+        console.error('Error fetching wallet data:', error);
+        setWalletsData((prev) => {
+          const newData = { ...prev };
+          delete newData[normalizedAddress];
+          return newData;
+        });
+        toast.error(`Failed to add node ${normalizedAddress}`, {
+          description: 'Please check the address and try again',
+        });
+      }
     }
   };
 
