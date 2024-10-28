@@ -237,7 +237,7 @@ export function useWalletData(selectedDate: Date) {
       toast.error(`Invalid addresses: ${invalidAddresses.join(', ')}`);
     }
 
-    validAddresses.forEach(async (normalizedAddress) => {
+    for (const normalizedAddress of validAddresses) {
       const initialWalletData: WalletData = {
         address: normalizedAddress,
         transactions: [],
@@ -287,7 +287,7 @@ export function useWalletData(selectedDate: Date) {
           description: 'Please check the address and try again',
         });
       }
-    });
+    }
   };
 
   const removeWallet = (address: string) => {

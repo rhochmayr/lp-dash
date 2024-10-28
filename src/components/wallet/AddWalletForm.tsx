@@ -6,7 +6,7 @@ import { Plus, Wallet } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface AddWalletFormProps {
-  onAddWallet: (address: string) => void;
+  onAddWallet: (addresses: string[]) => void;
   isInitialized: boolean;
 }
 
@@ -41,9 +41,9 @@ export function AddWalletForm({ onAddWallet, isInitialized }: AddWalletFormProps
       toast.error(`Invalid addresses: ${invalidAddresses.join(', ')}`);
     }
 
-    validAddresses.forEach((address) => {
-      onAddWallet(address);
-    });
+    if (validAddresses.length > 0) {
+      onAddWallet(validAddresses);
+    }
 
     setNewWallets('');
   };
