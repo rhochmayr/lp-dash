@@ -25,6 +25,7 @@ Currently the dashboard is in development and will be updated with new features 
 - Node labeling
 - Node metrics (CPU, Memory, GPU, uptime, etc.)
 - Node leaderboard details (rank, energy, points)
+- Bulk addition of nodes
 
 ## Components
 
@@ -60,6 +61,20 @@ npm run dev
 ```
 
 This will start the Vite development server and you can view the application at `http://localhost:3000`.
+
+## Adding Multiple Nodes
+
+The Lilypad Node Checker now supports adding multiple nodes at once. You can input or upload multiple node addresses simultaneously. This can be done using a comma-separated list of wallet addresses or a multiline list of wallet addresses.
+
+### Instructions
+
+1. Open the Add Nodes form.
+2. Enter the Ethereum wallet addresses in the input field. You can either:
+   - Enter a comma-separated list of wallet addresses.
+   - Enter a multiline list of wallet addresses.
+3. Click the "Add Nodes" button.
+4. The form will validate each address individually and add valid addresses.
+5. Invalid addresses will be reported without stopping the addition of other valid addresses.
 
 ## Scripts
 
