@@ -6,7 +6,7 @@ export async function fetchWalletTransactions(
   startBlock?: string
 ): Promise<WalletTransaction[]> {
   const allResults: WalletTransaction[] = [];
-  let endBlock = 100000000;
+  let endBlock = 125000000;
   const effectiveStartBlock = startBlock || API_CONFIG.START_BLOCK;
   let hasMore = true;
 
