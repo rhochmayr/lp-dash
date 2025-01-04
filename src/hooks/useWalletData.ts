@@ -5,7 +5,7 @@ import { loadFromStorage, saveToStorage } from '@/lib/storage';
 import { TIME } from '@/constants';
 import type { WalletData, NodeMetrics, NodeStats } from '@/types';
 
-export function useWalletData(selectedDate: Date) {
+export function useWalletData(selectedDate: Date, apiKey: string) {
   const [walletsData, setWalletsData] = useState<Record<string, WalletData>>({});
   const [nodeMetricsData, setNodeMetricsData] = useState<Record<string, NodeMetrics>>({});
   const [nodeStatsData, setNodeStatsData] = useState<Record<string, NodeStats>>({});
@@ -99,7 +99,7 @@ export function useWalletData(selectedDate: Date) {
           }
 
           // Fetch new transactions
-          const newTransactions = await fetchWalletTransactions(normalizedAddress, startBlock);
+          const newTransactions = await fetchWalletTransactions(normalizedAddress, apiKey, startBlock);
           
           // Merge with existing transactions if any
           const mergedTransactions = existingWallet?.transactions 
@@ -153,7 +153,7 @@ export function useWalletData(selectedDate: Date) {
       setIsRefreshing(false);
       setRefreshingWallet(null);
     }
-  }, [walletsData, selectedDate, isRefreshing]);
+  }, [walletsData, selectedDate, isRefreshing, apiKey]);
 
   // Initial data loading
   useEffect(() => {
@@ -257,7 +257,7 @@ export function useWalletData(selectedDate: Date) {
       }));
 
       try {
-        const transactions = await fetchWalletTransactions(normalizedAddress);
+        const transactions = await fetchWalletTransactions(normalizedAddress, apiKey);
         const transactionsByDate = groupTransactionsByDate(transactions);
         const hours = getHourlyTransactions(transactions, selectedDate);
 

@@ -24,6 +24,14 @@ function App() {
     }
   });
 
+  const [apiKey, setApiKey] = useState(() => {
+    try {
+      return localStorage.getItem('api-key') || '';
+    } catch {
+      return '';
+    }
+  });
+
   const {
     walletsData,
     isInitialized,
@@ -34,7 +42,7 @@ function App() {
     addWallet,
     removeWallet,
     updateWalletName
-  } = useWalletData(date);
+  } = useWalletData(date, apiKey);
 
   // Reset selected wallet if it's removed
   useEffect(() => {
@@ -126,6 +134,8 @@ function App() {
           isInitialized={isInitialized}
           showNames={showNames}
           onShowNamesChange={setShowNames}
+          apiKey={apiKey}
+          setApiKey={setApiKey}
         />
       </div>
     </div>
