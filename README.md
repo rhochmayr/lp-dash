@@ -47,7 +47,7 @@ This repository contains a modern dashboard application built with React, TypeSc
 To get started with lp-dash, clone the repository and install the dependencies:
 
 ```sh
-git clone https://github.com/yourusername/lp-dash.git
+git clone https://github.com/rhochmayr/lp-dash.git
 cd lp-dash
 npm install
 ```
@@ -60,7 +60,7 @@ To start the development server, run:
 npm run dev
 ```
 
-This will start the Vite development server and you can view the application at `http://localhost:3000`.
+This will start the Vite development server and you can view the application at `http://localhost:5173`.
 
 ## Adding Multiple Nodes
 
@@ -86,43 +86,23 @@ The Lilypad Node Checker now supports adding multiple nodes at once. You can inp
 ## Project Structure
 
 ```markdown
-lp-dash/
-├── .gitignore
-├── components.json
-├── eslint.config.js
-├── index.html
-├── package.json
-├── postcss.config.js
+.
+├── public/             # Static files
+├── src/                # Source files
+│   ├── components/     # Reusable components
+│   │   ├── controls/   # Form controls
+│   │   ├── header/     # Header component
+│   │   ├── node/       # Node components
+│   │   ├── ui/         # UI components
+│   │   ├── wallet/     # Wallet components
+│   ├── constants/      # Constants
+│   ├── hooks/          # Custom hooks
+│   ├── lib/            # Utility functions
+│   │   ├── api/        # API functions
+│   ├── types/          # Type definitions
+├── index.html    
 ├── README.md
-├── src/
-│   ├── App.css
-│   ├── App.tsx
-│   ├── components/
-│   │   ├── ui/
-│   │   │   ├── accordion.tsx
-│   │   │   ├── alert-dialog.tsx
-│   │   │   ├── alert.tsx
-│   │   │   ├── aspect-ratio.tsx
-│   │   │   ├── avatar.tsx
-│   │   │   ├── badge.tsx
-│   │   │   ├── ...
-│   │   ├── WalletStatusGrid.tsx
-│   ├── hooks/
-│   │   ├── use-toast.ts
-│   ├── index.css
-│   ├── lib/
-│   │   ├── api.ts
-│   │   ├── utils.ts
-│   ├── main.tsx
-│   ├── types.ts
-│   ├── vite-env.d.ts
-├── tailwind.config.js
-├── tsconfig.app.json
-├── tsconfig.app.tsbuildinfo
-├── tsconfig.json
-├── tsconfig.node.json
-├── tsconfig.node.tsbuildinfo
-├── vite.config.ts
+├── ...
 ```
 
 ## Contributing
