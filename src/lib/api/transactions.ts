@@ -3,6 +3,7 @@ import { API_CONFIG, ApiError } from './config';
 
 export async function fetchWalletTransactions(
   address: string,
+  apiKey: string,
   startBlock?: string
 ): Promise<WalletTransaction[]> {
   const allResults: WalletTransaction[] = [];
@@ -11,7 +12,7 @@ export async function fetchWalletTransactions(
   let hasMore = true;
 
   while (hasMore) {
-    const uri = `${API_CONFIG.BASE_URL}?module=account&action=txlist&address=${address}&startblock=${effectiveStartBlock}&endblock=${endBlock}&offset=${API_CONFIG.BATCH_SIZE}&sort=desc`;
+    const uri = `${API_CONFIG.BASE_URL}?module=account&action=txlist&address=${address}&startblock=${effectiveStartBlock}&endblock=${endBlock}&offset=${API_CONFIG.BATCH_SIZE}&sort=desc&apikey=${apiKey}`;
 
     try {
       const response = await fetch(uri);
